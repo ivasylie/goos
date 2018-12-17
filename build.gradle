@@ -1,0 +1,79 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:2.4'
+    }
+}
+
+import com.bmuschko.gradle.docker.tasks.*
+import com.bmuschko.gradle.docker.tasks.image.*
+import com.bmuschko.gradle.docker.tasks.container.*
+
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+docker {
+	url = 'https://192.168.99.100:2376'//'https://192.168.59.103:2376'
+	certPath = new File(System.properties['user.home'], '.docker/machine/certs')
+}
+
+ext {
+	dockerBaseDir = file("$buildDir/docker").absolutePath
+}
+
+task dockerInfo(type: DockerInfo)
+
+task copySrcFiles(type: Copy) {
+	from 'src'
+	into dockerBaseDir
+}
+
+task createDockerfile(type: Dockerfile) {
+	destFile = project.file("$dockerBaseDir/Dockerfile")
+	from 'java:8'
+	runCommand 'apt-get update && apt-get install wget'
+	//runCommand "wget 'http://www.igniterealtime.org/downloads/download-landing.jsp?file=openfire/openfire_3_6_0a.tar.gz' "
+	//runCommand "wget 'http://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_3_6_0a.tar.gz' -O openfire_3_6_0a.tar.gz "
+	runCommand "wget 'https://github.com/igniterealtime/Openfire/releases/download/v3.6.0a/openfire_src_3_6_0a.tar.gz' -O openfire_src_3_6_0a.tar.gz "
+	runCommand 'tar xzf openfire_src_3_6_0a.tar.gz'
+	copyFile 'openfire.xml', '/openfire/conf/openfire.xml'
+	copyFile 'entrypoint.sh', '/entrypoint.sh'
+	defaultCommand 'sh -ex /entrypoint.sh'.split()
+	exposePort 5222, 9090
+}
+task buildImage(type: DockerBuildImage) {
+	dependsOn copySrcFiles
+	dependsOn createDockerfile
+	inputDir = createDockerfile.destFile.parentFile
+	tag = 'tma/goos-openfire'
+}
+
+task createContainer(type: DockerCreateContainer) {
+	containerName "goos-openfire"
+	portBindings = "5222:5222"
+	targetImageId { "tma/goos-openfire" }
+}
+
+task startContainer(type: DockerStartContainer) {
+	targetContainerId { "goos-openfire" }
+}
+task stopContainer(type: DockerStopContainer) {
+	targetContainerId { "goos-openfire" }
+}
+task removeContainer(type: DockerRemoveContainer) {
+	targetContainerId { "goos-openfire" }
+}
+
+dependencies {
+	implementation 'junit:junit:4.12'
+	implementation 'org.junit.jupiter:junit-jupiter-api'
+	implementation 'junit:junit:4.12'
+	implementation 'junit:junit:4.12'
+}
