@@ -12,6 +12,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 
 repositories {
+	mavenCentral()
 	jcenter()
 }
 
@@ -60,4 +61,12 @@ task stopContainer(type: DockerStopContainer) {
 }
 task removeContainer(type: DockerRemoveContainer) {
 	targetContainerId { "goos-openfire" }
+}
+
+apply plugin: 'java'
+
+dependencies {
+	compile group: 'jivesoftware', name: 'smack', version: '3.0.4'
+	compile group: 'com.googlecode.windowlicker', name: 'windowlicker-swing', version: 'r268'
+	implementation 'junit:junit:4.12'
 }
