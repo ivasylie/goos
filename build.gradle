@@ -1,27 +1,18 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:2.4'
-    }
+plugins {
+	id 'com.bmuschko.docker-remote-api' version '4.2.0'
 }
 
-import com.bmuschko.gradle.docker.tasks.*
-import com.bmuschko.gradle.docker.tasks.image.*
-import com.bmuschko.gradle.docker.tasks.container.*
 
+import com.bmuschko.gradle.docker.tasks.DockerInfo
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerRemoveContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 
 repositories {
-    mavenCentral()
-}
-
-apply plugin: 'com.bmuschko.docker-remote-api'
-
-docker {
-	url = 'https://192.168.99.100:2376'//'https://192.168.59.103:2376'
-	certPath = new File(System.properties['user.home'], '.docker/machine/certs')
+	jcenter()
 }
 
 ext {
@@ -40,24 +31,24 @@ task createDockerfile(type: Dockerfile) {
 	from 'java:8'
 	runCommand 'apt-get update && apt-get install wget'
 	//runCommand "wget 'http://www.igniterealtime.org/downloads/download-landing.jsp?file=openfire/openfire_3_6_0a.tar.gz' "
-	//runCommand "wget 'http://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_3_6_0a.tar.gz' -O openfire_3_6_0a.tar.gz "
-	runCommand "wget 'https://github.com/igniterealtime/Openfire/releases/download/v3.6.0a/openfire_src_3_6_0a.tar.gz' -O openfire_src_3_6_0a.tar.gz "
-	runCommand 'tar xzf openfire_src_3_6_0a.tar.gz'
+	runCommand "wget 'https://github.com/igniterealtime/Openfire/releases/download/v3.6.0a/openfire_3_6_0a.tar.gz' -O openfire_3_6_0a.tar.gz "
+	runCommand 'tar xzf openfire_3_6_0a.tar.gz'
 	copyFile 'openfire.xml', '/openfire/conf/openfire.xml'
 	copyFile 'entrypoint.sh', '/entrypoint.sh'
 	defaultCommand 'sh -ex /entrypoint.sh'.split()
 	exposePort 5222, 9090
 }
+
 task buildImage(type: DockerBuildImage) {
 	dependsOn copySrcFiles
 	dependsOn createDockerfile
-	inputDir = createDockerfile.destFile.parentFile
-	tag = 'tma/goos-openfire'
+	inputDir = file(createDockerfile.destFile).parentFile
+	tags.add('tma/goos-openfire')
 }
 
 task createContainer(type: DockerCreateContainer) {
-	containerName "goos-openfire"
-	portBindings = "5222:5222"
+	containerName = "goos-openfire"
+	portBindings = ['5222:5222', '9090:9090']
 	targetImageId { "tma/goos-openfire" }
 }
 
@@ -69,11 +60,4 @@ task stopContainer(type: DockerStopContainer) {
 }
 task removeContainer(type: DockerRemoveContainer) {
 	targetContainerId { "goos-openfire" }
-}
-
-dependencies {
-	implementation 'junit:junit:4.12'
-	implementation 'org.junit.jupiter:junit-jupiter-api'
-	implementation 'junit:junit:4.12'
-	implementation 'junit:junit:4.12'
 }

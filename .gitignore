@@ -2,5 +2,5 @@
 build/
 *~
 *.swp
-.idea
-
+.idea/
+*.iml
