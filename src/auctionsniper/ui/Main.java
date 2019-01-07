@@ -9,13 +9,12 @@ import javax.swing.*;
 
 public class Main {
 
-    public static final String STATUS_JOINING = "Joining";
-    public static final String SNIPER_STATUS_NAME = "Statusname";
-    public static final String STATUS_LOST = "Lost";
+    private Chat notToBeGCd;
+    public static final String MAIN_WINDOW_NAME = "Auction Sniper Main";
     private static final int ARG_HOSTNAME = 0;
     private static final int ARG_USERNAME = 1;
     private static final int ARG_PASSWORD = 2;
-    private static final int ARG_ITEM_ID = 3;
+    private static final int ARG_ITEM_ID  = 3;
 
     public static final String AUCTION_RESOURCE = "Auction";
     public static final String ITEM_ID_AS_LOGIN = "auction-%s";
@@ -29,18 +28,27 @@ public class Main {
 
     public static void main(String... args) throws Exception {
         Main main = new Main();
-        XMPPConnection connection = connectTo(args[ARG_HOSTNAME],
-                                              args[ARG_USERNAME],
-                                              args[ARG_PASSWORD]);
-        Chat chat = connection.getChatManager().createChat(
-                auctionID(args[ARG_ITEM_ID], connection),
+        main.joinAuction(
+                connectTo(args[ARG_HOSTNAME], args[ARG_USERNAME], args[ARG_PASSWORD]),
+                args[ARG_ITEM_ID]);
+    }
+
+    private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException {
+        final Chat chat = connection.getChatManager().createChat(
+                auctionID(itemId, connection),
                 new MessageListener() {
                     @Override
                     public void processMessage(Chat chat, Message message) {
-
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                ui.showStatus(MainWindow.STATUS_LOST);
+                            }
+                        });
                     }
                 }
         );
+        this.notToBeGCd = chat;
         chat.sendMessage(new Message());
     }
 
