@@ -26,7 +26,7 @@ This might take a while first time.
 
 After creating the image and starting the container the server should be ready to use:
 
-Configurate FakeAuctionServer.java
+Configurate test.test.endtoend.auctionsniper.FakeAuctionServer.java
 
 	public static final String XMPP_HOSTNAME = "192.168.59.103";
 

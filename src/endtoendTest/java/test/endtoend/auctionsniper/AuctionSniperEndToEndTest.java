@@ -1,5 +1,9 @@
+package java.auctionsniper;
+
 import org.junit.After;
 import org.junit.Test;
+import test.auctionsniper.FakeAuctionServer;
+import test.endtoend.auctionsniper.ApplicationRunner;
 
 public class AuctionSniperEndToEndTest {
     private final FakeAuctionServer auction = new FakeAuctionServer("item-54321");
@@ -8,15 +12,26 @@ public class AuctionSniperEndToEndTest {
     @Test
     public void sniperJoinsAuctionUntilAuctionCloses() throws Exception {
         auction.startSellingItem();
-        Thread.sleep(2000);
         application.startBiddingIn(auction);
-        Thread.sleep(2000);
         auction.hasReceivedJoinRequestFromSniper();
-        Thread.sleep(2000);
         auction.announceClosed();
-        Thread.sleep(2000);
         application.showSniperHasLostAuction();
-        Thread.sleep(2000);
+    }
+
+    @Test
+    public void sniperMakesHigherBidButLoses() throws Exception {
+        auction.startSellingItem();
+
+        application.startBiddingIn(auction);
+        auction.hasReceivedJoinRequestFrom(ApplicationRunner.SNIPER_XMPP_ID);
+
+        auction.reportPrice(1000, 98, "other bidder");
+        application.hasShownSniperIsBidding();
+
+        auction.hasRceivedBid(1098, ApplicationRunner.SNIPER_XMPP_ID);
+
+        auction.announceClosed();
+        application.showSniperHasLostAuction();
     }
 
     @After

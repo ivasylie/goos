@@ -1,3 +1,6 @@
+package test.auctionsniper;
+
+import org.hamcrest.Matcher;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
@@ -20,4 +23,11 @@ public class SingleMessageListener implements MessageListener {
     public void receivesMessage() throws InterruptedException {
         assertThat("Message", messages.poll(5, TimeUnit.SECONDS), is(notNullValue()));
     }
+
+    public void receivesAMessage(Matcher<? super String> messageMatcher) throws InterruptedException {
+        final Message message = messages.poll(5, TimeUnit.MILLISECONDS);
+        assertThat("Message", message, is(notNullValue()));
+        assertThat(message.getBody(), messageMatcher);
+    }
+
 }
