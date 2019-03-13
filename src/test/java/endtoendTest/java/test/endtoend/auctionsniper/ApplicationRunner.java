@@ -1,8 +1,8 @@
-package test.endtoend.auctionsniper;
+package endtoendTest.java.test.endtoend.auctionsniper;
 
 
-import test.auctionsniper.AuctionSniperDriver;
-import test.auctionsniper.FakeAuctionServer;
+import auctionsniper.Main;
+import auctionsniper.MainWindow;
 
 public class ApplicationRunner {
 

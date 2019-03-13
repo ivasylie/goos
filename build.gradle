@@ -1,5 +1,6 @@
 plugins {
 	id 'com.bmuschko.docker-remote-api' version '4.2.0'
+	id 'java'
 }
 
 
@@ -69,4 +70,7 @@ dependencies {
 	compile group: 'jivesoftware', name: 'smack', version: '3.0.4'
 	compile group: 'com.googlecode.windowlicker', name: 'windowlicker-swing', version: 'r268'
 	implementation 'junit:junit:4.12'
+
+	testCompile 'org.jmock:jmock:2.6.0'
+	testCompile 'org.jmock:jmock-junit4:2.6.0'
 }
